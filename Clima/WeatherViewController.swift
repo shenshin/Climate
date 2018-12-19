@@ -8,7 +8,8 @@
 
 import UIKit
 import CoreLocation
-
+import Alamofire
+import SwiftyJSON
 
 class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
@@ -19,6 +20,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
 
     //Переменные экземпляра
     let locationManager : CLLocationManager = CLLocationManager()
+    let weatherDataModel = WeatherDataModel()
 
     
     //IBOutlets
@@ -45,10 +47,26 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     //MARK: - Networking
     /***************************************************************/
     
-    //Write the getWeatherData method here:
     
-
-    
+    func getWeatherData(url: String, parameters: [String:String])->Void{
+        Alamofire.request(url, method: .get, parameters: parameters).responseJSON {
+            response in
+            if response.result.isSuccess {
+                print("Данные о погоде получены.")
+                
+                    if let weather = response.result.value {
+                        let weatherJSON = JSON(weather)
+                        self.updateWeatherData(json: weatherJSON)
+                } else {
+                    print("Получен пустой ответ от сервера")
+                }
+                
+            } else {
+                print("Error: \(String(describing: response.result.error))")
+                self.cityLabel.text = "Сервер погоды недоступен"
+            }
+        }
+    }
     
     
     
@@ -57,9 +75,9 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     /***************************************************************/
    
     
-    //Write the updateWeatherData method here:
-    
-    
+    func updateWeatherData(json: JSON){
+        let tempResult = json["main"]["temp"]
+    }
     
     
     
@@ -77,19 +95,15 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     //MARK: - Location Manager Delegate Methods
     /***************************************************************/
     
-    
-    //Write the didUpdateLocations method here:
-    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let location = locations[locations.count - 1]
         if location.horizontalAccuracy > 0 {
             locationManager.stopUpdatingLocation()
             let params : [String : String] = ["lat" : "\(location.coordinate.latitude)", "lon" : "\(location.coordinate.longitude)", "appid" : APP_ID]
-            print(params)
+            getWeatherData(url: WEATHER_URL, parameters: params)
+            //print(params)
         }
     }
-    
-    //Write the didFailWithError method here:
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
