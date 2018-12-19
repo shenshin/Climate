@@ -76,7 +76,17 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
    
     
     func updateWeatherData(json: JSON){
-        let tempResult = json["main"]["temp"]
+        
+            //температура
+            weatherDataModel.temperature = Int(json["main"]["temp"].doubleValue - 273.15)
+            //город
+            weatherDataModel.city = json["name"].stringValue
+            //погодные условия - числовой код
+            weatherDataModel.condition = json["weather"][0]["id"].intValue
+            //перевод числового кода в описание (название иконки)
+            weatherDataModel.weatherIconName = weatherDataModel.updateWeatherIcon(condition: weatherDataModel.condition)
+        
+        updateUIWithWeatherData()
     }
     
     
@@ -85,9 +95,11 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     /***************************************************************/
     
     
-    //Write the updateUIWithWeatherData method here:
-    
-    
+    func updateUIWithWeatherData(){
+        cityLabel.text = weatherDataModel.city
+        temperatureLabel.text = String(weatherDataModel.temperature)
+        weatherIcon.image = UIImage(named: weatherDataModel.weatherIconName)
+    }
     
     
     
