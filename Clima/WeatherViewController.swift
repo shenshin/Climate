@@ -12,16 +12,16 @@ import CoreLocation
 
 class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
-    //Constants
+    //Константы
     let WEATHER_URL = "http://api.openweathermap.org/data/2.5/weather"
     let APP_ID = "39ed13c579ea7a1447e1b92059983746"
     
 
-    //TODO: Declare instance variables here
+    //Переменные экземпляра
     let locationManager : CLLocationManager = CLLocationManager()
 
     
-    //Pre-linked IBOutlets
+    //IBOutlets
     @IBOutlet weak var weatherIcon: UIImageView!
     @IBOutlet weak var cityLabel: UILabel!
     @IBOutlet weak var temperatureLabel: UILabel!
@@ -31,10 +31,12 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
         super.viewDidLoad()
         
         
-        //TODO:Set up the location manager here.
+        //Последовательносить шагов для запуска отслеживания GPS координат. Помимо этого внесены 2(3) добавления в Info.plist (см. 3 верхних строчки)
+        //Третья сверху строчка (dictionary) в Info.plist разрешает смартфону обращаться к серверу погоды по незащищённому http протоколу
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
         
     }
     
@@ -57,7 +59,7 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     //Write the updateWeatherData method here:
     
-
+    
     
     
     
@@ -78,11 +80,21 @@ class WeatherViewController: UIViewController, CLLocationManagerDelegate {
     
     //Write the didUpdateLocations method here:
     
-    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let location = locations[locations.count - 1]
+        if location.horizontalAccuracy > 0 {
+            locationManager.stopUpdatingLocation()
+            let params : [String : String] = ["lat" : "\(location.coordinate.latitude)", "lon" : "\(location.coordinate.longitude)", "appid" : APP_ID]
+            print(params)
+        }
+    }
     
     //Write the didFailWithError method here:
     
-    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print(error)
+        cityLabel.text = "Location unavailable"
+    }
     
 
     
